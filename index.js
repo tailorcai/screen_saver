@@ -69,7 +69,40 @@ app.post('/upload',
             res.send("Your uploaded file name : " + req.file.originalname );
         })    
     })
+app.get('/imgs/*', 
+    (req,res) => {
+        //console.log( req.params.path )
+        let p = req.url.substr(5)
+        res.sendFile( path.join( config.stg_path, p ));
+    })
 
+app.get('/l/*',
+    (req,res) => {
+        let rp = req.url.substr(2)
+        let p = path.join( config.stg_path, rp )
+        // console.log( p )
+        if( !fs.existsSync( p )) {
+            res.sendStatus(404)
+            return
+        }
+        var files = fs.readdirSync(p)
+        var content = "<html><body><ul>"
+        // console.log( files )
+        files.forEach( filename => {
+            var stats = fs.statSync(path.join(p,filename))
+            // console.log( stats.isDirectory(),stats.isFile()  )
+            if( filename.startsWith('.'))
+                return;
+            if(stats.isFile()){
+                content = content + `<li><a href='/imgs/${rp}/${filename}'>${filename}</a></li>`
+            }else if(stats.isDirectory()){
+                content = content + `<li><a href='./${filename}/'>${filename}</a></li>`
+            }
+        })
+        content += "</ul></body></html>"
+        // console.log( content )
+        res.send(content)
+    })
 app.listen(config.port, function() {
     console.log('Express server listening on port ', config.port); // eslint-disable-line
   });
