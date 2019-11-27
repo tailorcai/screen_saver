@@ -56,13 +56,18 @@ var storage = multer.diskStorage(
         }
     
     } ); 
-var upload = multer({ storage: storage }); 
+var upload = multer({ storage: storage }).single('image'); 
 
 app.post('/upload', 
-    upload.single('image'), 
-    function (req, res, next) { 
-        res.send("Your uploaded file name : " + req.file.originalname );
-    
+    function (req, res) { 
+        upload(req, res, function (err) {
+            if( err instanceof multer.MulterError )
+            {
+                res.sendStatus(500 );
+            }
+            else
+            res.send("Your uploaded file name : " + req.file.originalname );
+        })    
     })
 
 app.listen(config.port, function() {
