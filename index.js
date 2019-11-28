@@ -87,6 +87,10 @@ app.get('/l/*',
         }
         var files = fs.readdirSync(p)
         var content = "<html><body><ul>"
+        console.log( rp )
+        if( rp != '/' && rp.length > 0 ) {
+            content += "<li><a href='../'>..</a></li>"
+        }
         // console.log( files )
         files.forEach( filename => {
             var stats = fs.statSync(path.join(p,filename))
