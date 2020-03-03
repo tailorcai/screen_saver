@@ -4,11 +4,29 @@ var path = require("path");
 // var url = require("url");
 var fs = require("fs");
 var config = require("./config");
+var basicAuth = require('basic-auth');
 
 // var storage = require('filestorage').create(config.stg_path);
 // var upload = multer({ dest: config.stg_path })
 const app = express();
 
+var auth = function(req, resp, next) {
+    function unauthorized(resp) {
+        // 认证框要求输入用户名和密码的提示语
+        resp.set('WWW-Authenticate', 'Basic realm=Input User&Password');
+        return resp.sendStatus(401);
+    }
+    var user = basicAuth(req);
+    if (!user || !user.name || !user.pass) {
+        return unauthorized(resp);
+    }
+    // 简单粗暴，用户名直接为User，密码直接为Password
+    if (user.name === '4321' && user.pass === 'rewq') {
+        return next();
+    } else {
+        return unauthorized(resp);
+    }
+};
   
 // 递归创建目录 异步方法  
 function mkdirs(dirname, callback) {  
@@ -69,14 +87,14 @@ app.post('/upload',
             res.send("Your uploaded file name : " + req.file.originalname );
         })    
     })
-app.get('/imgs/*', 
+app.get('/imgs/*', auth,
     (req,res) => {
         //console.log( req.params.path )
         let p = req.url.substr(5)
         res.sendFile( path.join( config.stg_path, p ));
     })
 
-app.get('/l/*',
+app.get('/l/*', auth, 
     (req,res) => {
         let rp = req.url.substr(2)
         let p = path.join( config.stg_path, rp )
